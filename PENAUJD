@@ -1,0 +1,207 @@
+if not LPH_OBFUSCATED then  -- set these if not obfuscated so your script can run without obfuscation for when you are testing
+    LPH_JIT_ULTRA = function(...) return (...) end;
+    LPH_JIT_MAX = function(...) return (...) end;
+end
+
+local qm, playground, hoopz, inRange, held, hasBall = false, false, false, false, false, false, false
+local uis, rs, ts = game:GetService("UserInputService"), game:GetService("RunService"), game:GetService("TweenService")
+local ui, main, rangeLabel, corner, corner2, stroke, red, green = Instance.new("ScreenGui"), Instance.new("Frame"), Instance.new("TextLabel"), Instance.new("UICorner"), Instance.new("UICorner"), Instance.new("UIStroke"), Color3.fromRGB(255, 0, 0), Color3.fromRGB(0, 255, 0)
+
+ui.Parent = game.CoreGui
+ui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+main.Parent = ui
+main.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+main.BorderColor3 = Color3.fromRGB(121, 255, 97)
+main.Position = UDim2.new(0.111620791, 0, 0.32503891, 0)
+main.Size = UDim2.new(0, 204, 0, 75)
+
+corner.Parent = main
+
+rangeLabel.Parent = main
+rangeLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+rangeLabel.BackgroundTransparency = 1.000
+rangeLabel.Position = UDim2.new(0.106421195, 0, 0.272941172, 0)
+rangeLabel.Size = UDim2.new(0, 160, 0, 34)
+rangeLabel.Font = Enum.Font.GothamBold
+rangeLabel.Text = "In Range"
+rangeLabel.TextColor3 = Color3.fromRGB(85, 255, 0)
+rangeLabel.TextScaled = true
+rangeLabel.TextSize = 14.000
+rangeLabel.TextWrapped = true
+
+stroke.Thickness = 2.9
+stroke.Color = red
+stroke.Parent = main
+local plrs = game:GetService('Players')
+local res = game:GetService('ReplicatedStorage')
+local plr = plrs.LocalPlayer
+local char = plr.Character 
+local head = char.Head
+local torso = char.Torso
+local event = res.shootingEvent
+event.OnClientEvent:Connect(function(x)
+    _G.key = x 
+end)
+
+--Functions
+local function unlockEverything(a)
+    LPH_JIT_MAX(function() 
+        for n,o in pairs(a:GetChildren())do
+            if(o:IsA("BasePart")) then o.Locked = false end
+            unlockEverything(o)
+        end
+    end)();
+end
+local function GetGoal() 
+    LPH_JIT_ULTRA(function() 
+        for i,v in pairs(game:GetService('Workspace'):GetDescendants()) do
+            if v.Name == "Swish" and v.Parent:IsA('Part')  then
+                v.Parent.Name = 'kkk'
+                v.Parent.Parent = game:GetService('Workspace')
+            end
+        end
+    end)();
+end
+local function GetClosestGoal()
+    local distance,goal = 9e9, nil
+    for i,v in pairs(game:GetService'Workspace':GetChildren()) do
+        if v.Name == 'kkk' then
+            local targetPart = v
+            local magnitude = (plr.Character.Torso.Position - targetPart.Position).Magnitude      
+            if distance > magnitude then
+                distance = magnitude; 
+                goal = v
+            end
+        end
+    end
+    return goal, distance
+end
+local function calculateVector()
+    local goal, distance = GetClosestGoal()
+    local vector = Vector3.new(0,50,0)
+    local power = tonumber(plr.PlayerGui.PowerUI.Frame.Circle.PowerLabel.Text)
+    if distance > 58 and distance < 63 then
+        if power == 75 then
+            vector = Vector3.new(0, 50, 0)
+        elseif power == 80 then
+            vector = Vector3.new(0, 70, 0)
+        elseif power == 85 then
+            vector = Vector3.new(0, 85, 0)
+        end
+    elseif distance > 63 and distance < 68 then
+        if power == 80 then
+            vector = Vector3.new(0, 55, 0)
+        elseif power == 85 then
+            vector = Vector3.new(0, 80, 0)
+        end
+    elseif distance > 68 and distance < 73 then
+        if power == 85 then
+            vector = Vector3.new(0, 65, 0)
+        end
+    end
+    return vector
+end
+local function range()
+    local goal, dist = GetClosestGoal()
+    local pwr = tonumber(plr.PlayerGui.PowerUI.Frame.Circle.PowerLabel.Text)
+    
+    if dist > 58 and dist < 63 then
+        if pwr >= 75 then
+            inRange = true
+        else
+            inRange = false
+        end
+    elseif dist > 63 and dist < 69 then
+        if pwr >= 80 then
+            inRange = true
+        else
+            inRange = false
+        end
+    elseif dist > 69 and dist < 75 then
+        if pwr >= 85 then
+            inRange = true
+        else
+            inRange = false
+        end
+    elseif dist > 75 and dist < 80 then
+        if pwr >= 90 then
+            inRange = true
+        else
+            inRange = false
+        end
+    elseif dist > 80 and dist < 87 then
+        if pwr >= 95 then
+            inRange = true
+        else
+            inRange = false
+        end
+    elseif dist > 87 then
+        if pwr == 100 then
+            inRange = true
+        else
+            inRange = false
+        end
+    else
+        inRange = false
+    end
+    if not _G.key then 
+         rangeLabel.TextColor3 = red
+        rangeLabel.Text = "Key is nil, shoot ball to fetch key."
+        stroke.Color = red
+    end
+    if not inRange and _G.key then
+        rangeLabel.TextColor3 = red
+        rangeLabel.Text = "Not In Range"
+        stroke.Color = red
+    elseif inRange and _G.key then
+        rangeLabel.TextColor3 = green
+        rangeLabel.Text = "In Range"
+        stroke.Color = green
+    end
+    
+    if not hasBall then
+        main.Visible = false
+    else
+        main.Visible = true
+    end
+end
+
+-- // SCRIPT START UP -- \\
+unlockEverything(game:GetService('Workspace'))
+GetGoal();
+
+uis.InputBegan:Connect(function(key,gpe)
+    if key.KeyCode == Enum.KeyCode.X  and not gpe then 
+        local goal = GetClosestGoal()
+        local vector = calculateVector()
+        local u = (goal.Position +calculateVector() - torso.Position + char.Humanoid.MoveDirection).Unit
+        local power = tonumber(plr.PlayerGui.PowerUI.Frame.Circle.PowerLabel.Text)
+        local spawnPos  = game:GetService('Players').LocalPlayer.Character.HumanoidRootPart.Position
+        local randomized = loadstring(game:HttpGet('https://raw.githubusercontent.com/jHansBzgaXzja/dfsgfq/main/qwgfqwfg'))()
+        local default = { 
+            X1 = spawnPos.X,
+            Y1 = spawnPos.Y,
+            Z1 = spawnPos.Z,
+            X2 = u.X,
+            Y2 = u.Y,
+            Z2 = u.Z
+        }
+        local table = {}
+        for i,v in pairs(randomized) do 
+            table[i] = default[v]
+        end
+        event:FireServer(char.Basketball,power,table,_G.key)
+    end
+end)
+
+LPH_JIT_MAX(function()
+  rs.RenderStepped:Connect(function()
+        range()
+        if plr.Character and plr.Character:FindFirstChild("Basketball") or plr.Character:FindFirstChild("Ball") then
+            hasBall = true
+        else
+            hasBall = false
+        end
+    end)
+end)();
